@@ -9,8 +9,9 @@ browsers. It cannot run `swiftc` or the Python compile server: Pages is a
 | Deployment | View and play the example | Edit and compile arbitrary ContentView | Needs the creator's computer online |
 | --- | --- | --- | --- |
 | Pages static export | Yes | No; source is read-only | No |
+| Pages + visitor’s local compiler | Yes | Yes, after Connect | No |
 | Pages + remote compile API | Yes | Yes, once a compatible API is deployed | No |
-| Current local server | Yes | Yes | Yes |
+| Entirely local editor | Yes | Yes | Runs on the visitor’s computer |
 
 ## Static export
 
@@ -50,6 +51,23 @@ the module and its displayed source against the export's SHA-256 values.
 The QEMU simulator is a separate application. This export does not include its
 Node networking/community backend or expose a localhost simulator link.
 
+## Pages + each visitor's local compiler
+
+The static export includes a Compiler URL field, defaulting to
+`http://127.0.0.1:4191/compile`. Visitors run the setup/launch script on their own
+computer, then click Connect. No shared compile backend is required.
+
+```sh
+./playground/start-compiler.sh --allow-origin https://YOUR-ACCOUNT.github.io
+```
+
+See [local compiler setup](LOCAL_COMPILER.md) for prerequisites, pinned dependency
+bootstrap, browser permissions and troubleshooting. The page remembers the last
+successful endpoint; `?compiler=http%3A%2F%2F127.0.0.1%3A4191%2Fcompile` can also
+prefill it. URL parameters and remembered endpoints never connect automatically.
+The service supports exact-origin CORS, health checks, and loopback preflights.
+The static example stays usable while disconnected.
+
 ## Full online editing
 
 A frontend can be exported against an independently hosted HTTPS compiler:
@@ -61,16 +79,18 @@ python3 export_static.py --output ../dist/online-editor \
 
 This only configures the frontend; it does not provision or secure a service.
 No remote compiler endpoint has been deployed or tested in this experiment.
-The page identifies the destination host before edits are submitted and retains
+Click Connect to use the prefilled address. The page identifies the destination
+host before edits are submitted and retains
 the precompiled example until the first successful edited build.
 
 The API contract is:
 
+- `GET /health`: JSON `{"service":"openswiftui-passport-compiler","protocolVersion":1}`.
 - `POST` JSON `{"source":"import OpenSwiftUI\n..."}` with `Content-Type: application/json`.
 - On success: HTTP 200 with `Content-Type: application/wasm`, built for the
   `preview_init/button/tick/framebuffer/revision` exports and the existing WASI shim.
 - On error: a non-2xx status and JSON `{"error":"compiler diagnostics"}`.
-- CORS permits the exact Pages origin, `POST`, `OPTIONS` and the JSON content type.
+- CORS permits the exact Pages origin, `GET`, `POST`, `OPTIONS` and the JSON content type.
 - The backend uses the matching OSUI/Passport source versions and prebuilt LVGL
   dependencies; only the user's view needs to be recompiled for each request.
 
@@ -104,4 +124,7 @@ browser-hosted official compiler remains separate research work.
 - Export integrity and its initial, DOWN and hidden-image WASM frames match the
   existing native LVGL fixtures.
 - The separate baseline State/input smoke test runs 1,000 button/tick cycles.
-- Actual GitHub Pages deployment and a remote compile service: not performed.
+- Local API access tests cover approved/rejected origins, preflight, host validation,
+  malformed/oversized requests, and busy responses. Endpoint tests cover loopback
+  and HTTPS URLs and reject credentials and insecure remote addresses.
+- Actual public GitHub Pages deployment and a remote compile service: not performed.

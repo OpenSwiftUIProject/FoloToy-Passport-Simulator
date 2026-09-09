@@ -9,8 +9,9 @@ GH Pages 可以托管前端，浏览器可以运行预编译的 WASM。Pages 是
 | 方案 | 查看并操作示例 | 任意编辑 ContentView 后编译 | 需要作者电脑在线 |
 | --- | --- | --- | --- |
 | Pages 静态导出 | 可以 | 不支持，源码只读 | 不需要 |
+| Pages + 访问者本地编译器 | 可以 | Connect 后支持 | 不需要 |
 | Pages + 远端编译 API | 可以 | 部署兼容 API 后支持 | 不需要 |
-| 当前本地服务 | 可以 | 可以 | 需要 |
+| 完全本地的编辑器 | 可以 | 可以 | 运行在访问者电脑上 |
 
 ## 静态导出
 
@@ -45,6 +46,21 @@ python3 -m http.server 4192 --bind 127.0.0.1 --directory dist
 QEMU 模拟器是另一套应用。本导出不包含它的 Node 网络/社区后端，也不会显示
 指向 localhost 的模拟器链接。
 
+## Pages + 每个访问者自己的编译器
+
+静态导出包含 Compiler URL 输入框，默认 `http://127.0.0.1:4191/compile`。
+访问者在自己的电脑上运行启动脚本，再点 Connect；网站不需要共享编译后端。
+
+```sh
+./playground/start-compiler.sh --allow-origin https://YOUR-ACCOUNT.github.io
+```
+
+依赖、固定版本源码的自动准备、浏览器权限及排错见[本地编译器说明](LOCAL_COMPILER.zh_CN.md)。
+页面记住上次连接成功的地址，也支持
+`?compiler=http%3A%2F%2F127.0.0.1%3A4191%2Fcompile` 预填地址。
+URL 参数和记忆地址不会自动连接。服务提供准确 origin 的 CORS、健康检查和回环网络
+预检支持。未连接时仍能操作预编译示例。
+
 ## 完整在线编辑
 
 可以把前端配置为调用独立部署的 HTTPS 编译服务：
@@ -55,15 +71,16 @@ python3 export_static.py --output ../dist/online-editor \
 ```
 
 这只配置前端，不会创建或保护远端服务。本次没有部署或测试远端编译 API。
-页面会显示代码将发送到哪个主机，编辑后的首次构建成功前保持预编译示例。
+点击 Connect 使用预填地址。页面会显示代码将发送到哪个主机，编辑后的首次构建成功前保持预编译示例。
 
 API 约定：
 
+- `GET /health` 返回 JSON `{"service":"openswiftui-passport-compiler","protocolVersion":1}`。
 - `POST` JSON `{"source":"import OpenSwiftUI\n..."}`，Content-Type 为 application/json。
 - 成功返回 HTTP 200 和 application/wasm，包含当前的
   `preview_init/button/tick/framebuffer/revision` 导出并兼容现有 WASI shim。
 - 错误返回非 2xx 状态及 JSON `{"error":"编译诊断"}`。
-- CORS 允许准确的 Pages origin、POST/OPTIONS 和 JSON Content-Type。
+- CORS 允许准确的 Pages origin、GET/POST/OPTIONS 和 JSON Content-Type。
 - 服务使用匹配版本的 OSUI/Passport，预构建 LVGL 等依赖，每次只重编译用户的 View。
 
 公网服务需要一次性非特权编译容器、CPU/内存/时间配额、请求大小与并发限制、限流
@@ -88,4 +105,6 @@ OSUI 编译为 WASM 与把 `swiftc` 自身编译为 WASM 是两项工作。
 - 仅用静态文件服务器，在非根路径运行导出包；未配置编译 API，源码只读。
 - 导出包校验通过，初始、DOWN、隐藏图片三帧与已有原生 LVGL fixture 一致。
 - 基线 State/按键测试包含 1,000 次输入/刷新。
-- 实际 GitHub Pages 部署及远端编译服务：尚未执行。
+- 本地 API 测试覆盖允许/拒绝来源、预检、Host、错误/超大请求及忙碌响应；地址测试
+  覆盖 loopback 和 HTTPS，并拒绝凭据及不安全的远端地址。
+- 实际公网 GitHub Pages 部署及远端编译服务：尚未执行。

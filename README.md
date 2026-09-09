@@ -1,5 +1,7 @@
 # FoloToy AI Passport 模拟器
 
+此 fork 由 OpenSwiftUIProject 维护，基于 [VOID001/FoloToy-Passport-Simulator](https://github.com/VOID001/FoloToy-Passport-Simulator)，增加与 OpenSwiftUI Playground 的固件联动。
+
 [![FoloToy AI Passport 模拟器演示](./public/assets/demo/folotoy-emu.gif)](./public/assets/demo/folotoy-emu.mp4)
 
 > 点击可观看视频！
@@ -177,7 +179,28 @@ npm run start:dist       # 运行 dist/ 版本
 EMULATOR_NETWORK_ALLOW_PRIVATE=1 npm start
 ```
 
-## OpenSwiftUI Playground
+## OpenSwiftUI Playground 固件联动
 
-在网页中编辑 `ContentView` 并运行 OpenSwiftUI + LVGL WASM 预览。
-启动方法及验证结果见 [Playground 文档](playground/README.zh_CN.md)。
+浏览器中的 Swift 编辑器由 [OpenSwiftUIProject/ai-passport](https://github.com/OpenSwiftUIProject/ai-passport)
+维护，预期 Pages 入口为 https://openswiftuiproject.github.io/ai-passport/。
+本仓库的 `playground/` 保留早期原型；新功能和安装说明以 ai-passport 的
+`tools/playground/` 为准。快速 WASM 预览不需要启动 QEMU。
+
+预览完成后，可在 Playground 构建并下载 `ContentView-full.bin`，或直接发送给本 Simulator：
+
+```sh
+git clone --branch main https://github.com/OpenSwiftUIProject/FoloToy-Passport-Simulator.git
+cd FoloToy-Passport-Simulator
+npm ci
+npm start -- --playground-origin https://openswiftuiproject.github.io
+```
+
+本地预览时，将 origin 替换为页面的实际协议、主机和端口，不带路径。
+Playground 的 Simulator URL 默认 `http://127.0.0.1:4190/`。点击 Send to Simulator，
+再点 Open Simulator，会加载同一份完整固件并从初始状态运行。导入 API 需要本版本；
+旧版可通过已开启的本地文件上传入口读取下载的 full.bin。
+
+`npm start` 已启用本地上传；直接启动 `server.mjs` 时还需
+`--allow-local-firmware-upload`。只配置来源不会绕过禁用本地上传的部署策略。
+API 接收最多 8 MiB 的完整固件并检查 SHA-256；最多保留三份镜像，内存缓存十分钟后过期。
+跨源隔离保持开启，镜像不写磁盘、不上传社区。该路径不烧录真实设备。

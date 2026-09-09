@@ -14,7 +14,16 @@ OpenSwiftUI Embedded + Passport LVGL 绘制结果。
 已通过社区入口加载并启动项目 223。它运行固件，本身没有 Swift 编辑器或编译器。
 第一条路径是独立的快速预览原型，编译现有 Embedded 子集，并非完整默认 OSUI Package。
 
-## 启动
+## 一条命令启动本地编译器
+
+在仓库根目录执行 `./playground/start-compiler.sh`。要连接在线 Playground，加上
+`--allow-origin https://YOUR-ACCOUNT.github.io`。脚本会下载固定版本的 OSUI、Passport、
+LVGL 并准备构建，不需要已有 firmware workspace 或 ESP-IDF。需要先安装 Swift 6.3.1
+与主机构建工具，详见[启动说明](LOCAL_COMPILER.zh_CN.md)。网页默认连接地址为
+`http://127.0.0.1:4191/compile`，支持 `?compiler=...` URL 参数，也会记住连接成功的地址。
+点击 Connect 后启用编辑。
+
+## 使用已有源码手动启动
 
 需要 Swift 6.3.1 RELEASE（含 Embedded wasm32 库、clang、wasm-ld）、Python 3.9+、
 CMake、Ninja 和 Node.js 20+。当前验证环境为 macOS arm64。

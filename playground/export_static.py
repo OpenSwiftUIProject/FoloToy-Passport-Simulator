@@ -20,8 +20,8 @@ def notices():
         'Passport': build.PASSPORT / 'LICENSE',
         'OpenSwiftUI': build.OSUI / 'LICENSE',
         'Swift runtime': build.SWIFTC.parent.parent / 'share/swift/LICENSE.txt',
-        'LVGL': build.PASSPORT / 'managed_components/lvgl__lvgl/LICENCE.txt',
-        'Montserrat font': build.PASSPORT / 'managed_components/lvgl__lvgl/scripts/built_in_font/font_license/Montserrat/OFL.txt',
+        'LVGL': build.LVGL / 'LICENCE.txt',
+        'Montserrat font': build.LVGL / 'scripts/built_in_font/font_license/Montserrat/OFL.txt',
     }
     for path in sorted((ROOT / 'licenses').glob('*.txt')):
         sources[path.name] = path
@@ -32,12 +32,13 @@ def notices():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT.parent / 'dist/playground')
-    parser.add_argument('--compile-endpoint', help='HTTPS API URL; omitted means a read-only source with interactive WASM')
+    parser.add_argument('--compile-endpoint', help='HTTPS or loopback API URL to prefill; visitors can connect their own compiler')
     args = parser.parse_args()
     if args.compile_endpoint:
         url = urlsplit(args.compile_endpoint)
-        if url.scheme != 'https' or not url.netloc or url.username or url.password or url.fragment:
-            parser.error('--compile-endpoint must be an HTTPS URL without embedded credentials or fragments')
+        if (not url.hostname or url.username or url.password or url.fragment or url.query
+                or not (url.scheme == 'https' or (url.scheme == 'http' and url.hostname in ('localhost', '127.0.0.1')))):
+            parser.error('--compile-endpoint must use HTTPS or HTTP loopback, without credentials, query or fragments')
     output = args.output.resolve()
     if output.exists() and any(output.iterdir()):
         parser.error('Output must be empty; choose a fresh export directory')
@@ -45,9 +46,11 @@ def main():
     subprocess.run(['node', str(ROOT / 'build-editor.mjs')], check=True)
     build.compile_view(ROOT / 'ContentView.swift', build.BUILD / 'static-example.wasm')
     output.mkdir(parents=True, exist_ok=True)
-    for name in ['index.html', 'styles.css', 'app.js', 'worker.js', 'wasi.js', 'ContentView.swift']:
+    for name in ['index.html', 'styles.css', 'app.js', 'compiler-config.js', 'worker.js', 'wasi.js',
+                 'ContentView.swift', 'LOCAL_COMPILER.md', 'LOCAL_COMPILER.zh_CN.md',
+                 'DEPLOYMENT.md', 'DEPLOYMENT.zh_CN.md', 'README.md', 'README.zh_CN.md']:
         shutil.copy2(ROOT / name, output / name)
-    shutil.copy2(build.BUILD / 'editor.js', output / 'editor.js')
+    shutil.copy2(ROOT / 'build/editor.js', output / 'editor.js')
     shutil.copy2(build.BUILD / 'static-example.wasm', output / 'preview.wasm')
     # All URLs are relative, including Worker imports, so a /repo/ Pages base works.
     config = {

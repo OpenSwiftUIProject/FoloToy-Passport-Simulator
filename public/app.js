@@ -977,6 +977,28 @@ renderPresetStates();
 async function startApplication() {
   await configureFirmwareSources();
   showSimulatorNoticeOnce(simulatorNotice);
+  const handoff = new URLSearchParams(location.search).get('playground');
+  if (handoff !== null) {
+    try {
+      if (!allowLocalFirmwareUpload) throw new Error('当前部署不允许加载 Playground 固件');
+      if (!/^[a-f0-9]{48}$/.test(handoff)) throw new Error('Playground 固件链接无效');
+      pendingPresetId = null;
+      activeFirmwareName = 'ContentView-full.bin';
+      setUploadBusy(true);
+      resetScreenOverlay();
+      setRuntimeState('loading', '正在接收 Playground 固件');
+      presetFeedback.textContent = '正在加载 ContentView-full.bin';
+      renderPresetStates();
+      await runtime.start(`/api/playground-firmware/${handoff}`);
+    } catch (error) {
+      setUploadBusy(false);
+      setRuntimeState('waiting', 'Playground 固件加载失败');
+      setLoadingProgress(0, 'Playground 固件加载失败', error.message);
+      presetFeedback.textContent = error.message;
+      log(error.message);
+    }
+    return;
+  }
   try {
     const initialCommunityPlayUrl = resolveCommunityPlayUrl(window.location.search);
     if (initialCommunityPlayUrl) {

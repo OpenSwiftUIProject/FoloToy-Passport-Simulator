@@ -97,6 +97,8 @@ await cp(
   path.join(outputRoot, "DEPLOYMENT.md"),
 );
 
+await cp(path.join(projectRoot, 'playground-import.mjs'), path.join(outputRoot, 'playground-import.mjs'));
+
 const releasePackage = {
   name: packageMetadata.name,
   version: packageMetadata.version,

@@ -15,6 +15,8 @@ import {
 } from "./logging.mjs";
 import { attachNetworkBridge } from "./network-bridge.mjs";
 
+import { createPlaygroundImport, playgroundOrigins } from './playground-import.mjs';
+
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = Number(process.env.PORT || 4190);
 const directory = path.dirname(fileURLToPath(import.meta.url));
@@ -199,8 +201,10 @@ async function serve(request, response, {
   logger,
   requestId,
   runtimeConfig,
+  playgroundImport,
 }) {
   const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+  if (await playgroundImport(request, response, requestUrl.pathname)) return;
   if (requestUrl.pathname === "/healthz") {
     if (!["GET", "HEAD"].includes(request.method)) {
       response.writeHead(405, { ...securityHeaders, allow: "GET, HEAD" });
@@ -292,6 +296,8 @@ export function createAppServer(options = {}) {
     allowLocalFirmwareUpload:
       options.allowLocalFirmwareUpload ?? localFirmwareUploadEnabled(),
   });
+  const playgroundImport = createPlaygroundImport({ enabled: runtimeConfig.allowLocalFirmwareUpload,
+    origins: options.playgroundOrigins ?? playgroundOrigins(), headers: securityHeaders });
   const communityFirmwareFetcher =
     options.communityFirmwareFetcher ?? fetchCommunityFirmware;
   const server = http.createServer((request, response) => {
@@ -301,6 +307,7 @@ export function createAppServer(options = {}) {
       logger,
       requestId,
       runtimeConfig,
+      playgroundImport,
     }).catch((error) => {
       logger.error("http_request_failed", {
         request_id: requestId,

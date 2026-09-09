@@ -18,7 +18,17 @@ booted project 223. That emulator runs firmware; it does not include a Swift edi
 or Swift compiler. The first URL is a separate prototype using the existing
 Embedded source profile. It is not a build of the entire default OpenSwiftUI package.
 
-## Start
+## One-command local compiler
+
+Run `./playground/start-compiler.sh` from the repository root, or add
+`--allow-origin https://YOUR-ACCOUNT.github.io` to connect a hosted playground.
+The script fetches pinned OSUI, Passport and LVGL sources and prepares the build;
+no pre-existing firmware workspace or ESP-IDF is needed. Swift 6.3.1 and the host
+build tools must be installed first. See [setup instructions](LOCAL_COMPILER.md).
+The website defaults to `http://127.0.0.1:4191/compile`, supports a `?compiler=...`
+URL override, and remembers a successful connection. Click Connect to enable editing.
+
+## Manual start with existing source checkouts
 
 Prerequisites: Swift 6.3.1 RELEASE (including Embedded wasm32 libraries, clang and
 wasm-ld), Python 3.9+, CMake, Ninja, and Node.js 20+. The default Swift compiler is

@@ -14,8 +14,24 @@
   </header>
   <main>
     <section aria-label="Swift editor">
+      <form id="compiler-form" class="compiler-connection">
+        <label for="compiler-url">Compiler URL</label>
+        <div class="compiler-controls">
+          <input id="compiler-url" type="url" value="http://127.0.0.1:4191/compile" required spellcheck="false" aria-describedby="connection-status">
+          <button id="connect" type="submit">Connect</button>
+          <button id="disconnect" type="button" disabled>Disconnect</button>
+        </div>
+        <p id="connection-status" role="status">Connect your local compiler to edit Swift.</p>
+        <details><summary>Start a compiler on your computer</summary>
+          From the simulator checkout, run:
+          <pre id="start-command"></pre>
+          Keep the terminal open, then click Connect. Allow local network access if your browser asks.
+          <a href="./LOCAL_COMPILER.md" target="_blank" rel="noopener">Setup instructions</a>
+          · <a href="./LOCAL_COMPILER.zh_CN.md" target="_blank" rel="noopener">中文说明</a>
+        </details>
+      </form>
       <div class="toolbar">
-        <button class="primary" id="run">Build &amp; Run</button>
+        <button class="primary" id="run" disabled>Build &amp; Run</button>
         <label id="auto-label"><input id="auto" type="checkbox" checked> Auto preview</label>
         <button id="reset">Reset example</button>
         <span class="filename">ContentView.swift</span>

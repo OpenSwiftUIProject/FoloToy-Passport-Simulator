@@ -7,17 +7,19 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import time
 
 ROOT = Path(__file__).resolve().parent
 WORKSPACE = ROOT.parents[1]
 PASSPORT = Path(os.environ.get('PASSPORT_SOURCE_DIR', WORKSPACE / 'ai-passport'))
 OSUI = Path(os.environ.get('OPENSWIFTUI_SOURCE_DIR', WORKSPACE / 'framework/OpenSwiftUI'))
+LVGL = Path(os.environ.get('LVGL_SOURCE_DIR', PASSPORT / 'managed_components/lvgl__lvgl'))
 SWIFTC = Path(os.environ.get('SWIFTC', Path.home() / 'Library/Developer/Toolchains/swift-6.3.1-RELEASE.xctoolchain/usr/bin/swiftc'))
 BIN = SWIFTC.parent
 SYSROOT = Path(os.environ.get('WASI_SYSROOT', WORKSPACE / 'toolchains/wasi-sysroot-34.0'))
 BUILTINS = Path(os.environ.get('WASI_BUILTINS', WORKSPACE / 'toolchains/libclang_rt-34.0/wasm32-unknown-wasip1/libclang_rt.builtins.a'))
-BUILD = ROOT / 'build'
+BUILD = Path(os.environ.get('PLAYGROUND_BUILD_DIR', ROOT / 'build'))
 
 def run(args):
     subprocess.run(list(map(str, args)), check=True)
@@ -27,7 +29,7 @@ def swift_flags():
             '-enable-experimental-feature', 'Embedded', '-wmo', '-Osize', '-parse-as-library', '-DOPENSWIFTUI_LVGL']
 
 def prepare():
-    BUILD.mkdir(exist_ok=True)
+    BUILD.mkdir(parents=True, exist_ok=True)
     sources = [OSUI / line for line in (OSUI / 'Embedded/sources.txt').read_text().splitlines() if line]
     stamp = hashlib.sha256(b''.join(p.read_bytes() for p in sources) + str(SWIFTC).encode()).hexdigest()
     marker = BUILD / 'osui.stamp'
@@ -52,13 +54,13 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(CMAKE_AR "{BIN / 'llvm-ar'}")
 set(CMAKE_RANLIB "{BIN / 'llvm-ranlib'}")
 ''')
-    run(['cmake', '-S', PASSPORT / 'managed_components/lvgl__lvgl', '-B', BUILD / 'lvgl', '-G', 'Ninja',
+    run(['cmake', '-S', LVGL, '-B', BUILD / 'lvgl', '-G', 'Ninja',
          f'-DCMAKE_TOOLCHAIN_FILE={toolchain}', '-DCMAKE_BUILD_TYPE=MinSizeRel',
          f'-DLV_BUILD_CONF_PATH={PASSPORT / "tests/openswiftui-lvgl/lv_conf.h"}',
          '-DCONFIG_LV_BUILD_EXAMPLES=OFF', '-DCONFIG_LV_BUILD_DEMOS=OFF', '-DCONFIG_LV_USE_THORVG_INTERNAL=OFF'])
     run(['cmake', '--build', BUILD / 'lvgl', '--target', 'lvgl', '--parallel', '8'])
     includes = [PASSPORT / p for p in ['tests/openswiftui-lvgl/include', 'tests/swift-interop/include', 'main',
-                 'components/bsp/include', 'managed_components/lvgl__lvgl', 'tests/openswiftui-lvgl']]
+                 'components/bsp/include', 'tests/openswiftui-lvgl']] + [LVGL]
     flags = [BIN / 'clang', '--target=wasm32-unknown-wasip1', f'--sysroot={SYSROOT}', '-std=c11', '-Oz',
              '-ffunction-sections', '-fdata-sections', '-DLV_CONF_INCLUDE_SIMPLE', '-DLV_KCONFIG_IGNORE']
     flags += [f'-I{p}' for p in includes]
@@ -87,5 +89,9 @@ if __name__ == '__main__':
     parser.add_argument('--source', type=Path, default=ROOT / 'ContentView.swift')
     parser.add_argument('--output', type=Path, default=BUILD / 'preview.wasm')
     args = parser.parse_args()
-    if args.prepare: prepare()
-    print(json.dumps(compile_view(args.source.resolve(), args.output.resolve())))
+    try:
+        if args.prepare: prepare()
+        print(json.dumps(compile_view(args.source.resolve(), args.output.resolve())))
+    except subprocess.CalledProcessError as error:
+        # clang/swiftc already emitted the useful diagnostics; omit Python's traceback.
+        sys.exit(error.returncode)
