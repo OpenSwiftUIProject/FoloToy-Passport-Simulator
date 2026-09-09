@@ -176,3 +176,8 @@ npm run start:dist       # 运行 dist/ 版本
 ```bash
 EMULATOR_NETWORK_ALLOW_PRIVATE=1 npm start
 ```
+
+## OpenSwiftUI Playground
+
+在网页中编辑 `ContentView` 并运行 OpenSwiftUI + LVGL WASM 预览。
+启动方法及验证结果见 [Playground 文档](playground/README.zh_CN.md)。

@@ -10,7 +10,10 @@
     "start": "node server.mjs --allow-local-firmware-upload",
     "start:dist": "node dist/server.mjs",
     "verify:release": "node tools/verify-site.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "playground:prepare": "cd playground && python3 setup.py && python3 build.py --prepare",
+    "playground:start": "cd playground && python3 server.py",
+    "playground:test": "cd playground && node smoke.mjs"
   },
   "engines": {
     "node": ">=20"
