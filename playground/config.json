@@ -1,0 +1,6 @@
+{
+  "mode": "local",
+  "compileEndpoint": "./compile",
+  "precompiled": null,
+  "simulatorUrl": "http://127.0.0.1:4190/?play=223"
+}

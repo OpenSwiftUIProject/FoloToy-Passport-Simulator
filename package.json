@@ -11,9 +11,11 @@
     "start:dist": "node dist/server.mjs",
     "verify:release": "node tools/verify-site.mjs",
     "test": "node --test",
-    "playground:prepare": "cd playground && python3 setup.py && python3 build.py --prepare",
+    "playground:prepare": "cd playground && npm ci && npm run build:editor && python3 setup.py && python3 build.py --prepare",
     "playground:start": "cd playground && python3 server.py",
-    "playground:test": "cd playground && node smoke.mjs"
+    "playground:test": "cd playground && node smoke.mjs",
+    "playground:editor": "cd playground && npm run build:editor",
+    "playground:export": "cd playground && python3 export_static.py"
   },
   "engines": {
     "node": ">=20"

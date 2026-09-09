@@ -68,7 +68,7 @@ set(CMAKE_RANLIB "{BIN / 'llvm-ranlib'}")
 def compile_view(source, output):
     started = time.monotonic()
     obj = output.with_suffix('.client.o')
-    flags = swift_flags() + ['-I', BUILD, '-Xcc', f'-I{PASSPORT / "tests/swift-interop/include"}',
+    flags = swift_flags() + ['-module-name', 'PassportPreview', '-I', BUILD, '-Xcc', f'-I{PASSPORT / "tests/swift-interop/include"}',
         '-import-bridging-header', PASSPORT / 'main/swift/PassportBridge.h', '-emit-object', '-o', obj]
     run(flags + [source, PASSPORT / 'main/swift/PassportSceneSink.swift', ROOT / 'PreviewHost.swift'])
     run([BIN / 'wasm-ld', '--no-entry', '--gc-sections', '--strip-debug', '-z', 'stack-size=1048576',

@@ -16,6 +16,8 @@ PORT = 4191
 LOCK = threading.Lock()
 FILES = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
          '/worker.js': ('worker.js', 'text/javascript'), '/wasi.js': ('wasi.js', 'text/javascript'),
+         '/editor.js': ('build/editor.js', 'text/javascript'), '/config.json': ('config.json', 'application/json'),
+         '/styles.css': ('styles.css', 'text/css'),
          '/ContentView.swift': ('ContentView.swift', 'text/plain')}
 
 class Handler(BaseHTTPRequestHandler):

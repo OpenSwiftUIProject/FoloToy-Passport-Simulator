@@ -2,7 +2,7 @@
 
 # OpenSwiftUI Passport WASM Playground
 
-2026-09-09 验证的本地原型：在网页中修改 `ContentView.swift`，查看真实
+2026-09-09 验证的本地 Playground，编辑器包含 Swift 高亮、行号、折叠、撤销/重做、缩进和括号匹配：在网页中修改 `ContentView.swift`，查看真实
 OpenSwiftUI Embedded + Passport LVGL 绘制结果。
 
 | 地址 | 执行路径 |
@@ -10,7 +10,7 @@ OpenSwiftUI Embedded + Passport LVGL 绘制结果。
 | <http://127.0.0.1:4191/> | 编辑 Swift → 本机 Swift 编译器 → WASM → LVGL → Canvas |
 | <http://127.0.0.1:4190/?play=223> | 已发布 2048 的 RISC-V 固件 → QEMU WASM → 模拟显示器 |
 
-第二条路径使用原样克隆的 [FoloToy Passport Simulator](https://github.com/VOID001/FoloToy-Passport-Simulator)，
+第二条路径使用仓库已有的 [FoloToy Passport Simulator](https://github.com/VOID001/FoloToy-Passport-Simulator)，
 已通过社区入口加载并启动项目 223。它运行固件，本身没有 Swift 编辑器或编译器。
 第一条路径是独立的快速预览原型，编译现有 Embedded 子集，并非完整默认 OSUI Package。
 
@@ -38,6 +38,8 @@ FoloToy/
 在本目录执行：
 
 ```sh
+npm ci
+npm run build:editor
 python3 setup.py
 python3 build.py --prepare
 node smoke.mjs
@@ -74,7 +76,7 @@ Swift 目标为 `wasm32-unknown-none-wasm`，C 使用 WASI sysroot；`wasi.js` �
 | --- | --- |
 | 模拟器资源 / 测试 | PASS，board ABI v1 / 57 个测试 |
 | QEMU 中已发布的 2048 | PASS，已看到游戏启动，未作长时间游玩测试 |
-| OSUI + Passport + LVGL WASM 构建 | PASS，默认产物 549,256 字节，约 536 KiB |
+| OSUI + Passport + LVGL WASM 构建 | PASS，默认产物 约 537 KiB |
 | 缓存依赖后的编译 + 链接 | 约 1.5 秒；网页往返约 1.5–1.7 秒 |
 | 与原生 LVGL host 像素比较 | 初始、DOWN、隐藏图片三帧，每帧 76,800 像素，差异均为 0 |
 | State / 按键测试 | PASS，1,000 次输入/刷新，内存维持 4 MiB |
@@ -93,6 +95,8 @@ python3 compare-host.py ../../work/openswiftui-preview/frame.fps1
 结果及 PNG 写入 `build/`。
 
 ## 范围与后续方向
+
+已提供独立静态导出，详见[部署说明](DEPLOYMENT.zh_CN.md)。导出包含 CodeMirror 和预编译的可交互示例；没有编译服务时源码只读。
 
 已验证快速编辑、编译、预览路径。浏览器运行 WASM，Swift 编译仍在本机。
 纯静态托管的编辑器需要浏览器内 Swift 编译器，或独立编译服务。

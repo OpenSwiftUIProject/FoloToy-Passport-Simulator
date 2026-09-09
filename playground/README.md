@@ -2,7 +2,7 @@
 
 # OpenSwiftUI Passport WASM playground
 
-Local feasibility prototype, verified on 2026-09-09. Edit `ContentView.swift` in
+Local playground, verified on 2026-09-09. The Swift editor includes syntax highlighting, line numbers, folding, undo/redo, indentation and bracket matching. Edit `ContentView.swift` in
 the browser and preview the real OpenSwiftUI Embedded + Passport LVGL rendering.
 
 The two running experiments serve different purposes:
@@ -12,7 +12,7 @@ The two running experiments serve different purposes:
 | <http://127.0.0.1:4191/> | Edit Swift → local Swift compiler → WASM → LVGL → canvas |
 | <http://127.0.0.1:4190/?play=223> | Published Pocket 2048 RISC-V firmware → QEMU WASM → emulated display |
 
-The second URL uses the unmodified [FoloToy Passport Simulator](https://github.com/VOID001/FoloToy-Passport-Simulator)
+The firmware URL uses the existing [FoloToy Passport Simulator](https://github.com/VOID001/FoloToy-Passport-Simulator)
 checkout at `../../FoloToy-Passport-Simulator`. Its community loader successfully
 booted project 223. That emulator runs firmware; it does not include a Swift editor
 or Swift compiler. The first URL is a separate prototype using the existing
@@ -44,6 +44,8 @@ Paths can be overridden with `PASSPORT_SOURCE_DIR`, `OPENSWIFTUI_SOURCE_DIR`,
 From this directory:
 
 ```sh
+npm ci
+npm run build:editor
 python3 setup.py                 # pinned official WASI sysroot and compiler builtins
 python3 build.py --prepare       # cache OpenSwiftUI and C/LVGL; build default view
 node smoke.mjs
@@ -83,7 +85,7 @@ The runtime receives no filesystem or network API.
 | --- | --- |
 | Simulator resources / tests | PASS, board ABI v1 / 57 tests |
 | Published 2048 in QEMU | PASS, game visibly started; not an extended play test |
-| OpenSwiftUI + Passport + LVGL WASM build | PASS, default artifact 549,256 bytes (536 KiB) |
+| OpenSwiftUI + Passport + LVGL WASM build | PASS, default artifact approximately 537 KiB |
 | Warm example compile + link | Approximately 1.5 seconds; browser round trip 1.5–1.7 seconds |
 | Native LVGL pixel comparison | Initial, DOWN and hidden-image states: 76,800 pixels each, zero differences |
 | State/input smoke test | PASS, 1,000 input/tick cycles, memory stayed at 4 MiB |
@@ -103,6 +105,8 @@ above points to the usual FoloToy host build directory; another FPS1 base path i
 also accepted. It expects adjacent `.down` and `.hidden` fixtures.
 
 ## Scope and next steps
+
+A self-contained static export is available; see [Deployment](DEPLOYMENT.md). It includes the CodeMirror bundle and a precompiled interactive example. Source is read-only when no compiler endpoint is configured.
 
 This establishes the fast edit/compile/preview route. The browser executes WASM;
 Swift compilation still runs on the local computer. A fully static hosted editor

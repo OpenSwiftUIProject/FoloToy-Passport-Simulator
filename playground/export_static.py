@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Export a self-contained Pages-compatible example, optionally with a compile API."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import subprocess
+from urllib.parse import urlsplit
+import build
+
+ROOT = build.ROOT
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def notices():
+    sources = {
+        'Simulator': ROOT.parent / 'LICENSE',
+        'Passport': build.PASSPORT / 'LICENSE',
+        'OpenSwiftUI': build.OSUI / 'LICENSE',
+        'Swift runtime': build.SWIFTC.parent.parent / 'share/swift/LICENSE.txt',
+        'LVGL': build.PASSPORT / 'managed_components/lvgl__lvgl/LICENCE.txt',
+        'Montserrat font': build.PASSPORT / 'managed_components/lvgl__lvgl/scripts/built_in_font/font_license/Montserrat/OFL.txt',
+    }
+    for path in sorted((ROOT / 'licenses').glob('*.txt')):
+        sources[path.name] = path
+    for path in sorted((ROOT / 'node_modules').rglob('LICENSE*')):
+        if path.is_file(): sources[str(path.relative_to(ROOT / 'node_modules'))] = path
+    return '\n\n'.join(f'{name}\n{"=" * 72}\n{path.read_text()}' for name, path in sources.items())
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=ROOT.parent / 'dist/playground')
+    parser.add_argument('--compile-endpoint', help='HTTPS API URL; omitted means a read-only source with interactive WASM')
+    args = parser.parse_args()
+    if args.compile_endpoint:
+        url = urlsplit(args.compile_endpoint)
+        if url.scheme != 'https' or not url.netloc or url.username or url.password or url.fragment:
+            parser.error('--compile-endpoint must be an HTTPS URL without embedded credentials or fragments')
+    output = args.output.resolve()
+    if output.exists() and any(output.iterdir()):
+        parser.error('Output must be empty; choose a fresh export directory')
+    if not (ROOT / 'node_modules').exists(): parser.error('Run npm ci in playground first')
+    subprocess.run(['node', str(ROOT / 'build-editor.mjs')], check=True)
+    build.compile_view(ROOT / 'ContentView.swift', build.BUILD / 'static-example.wasm')
+    output.mkdir(parents=True, exist_ok=True)
+    for name in ['index.html', 'styles.css', 'app.js', 'worker.js', 'wasi.js', 'ContentView.swift']:
+        shutil.copy2(ROOT / name, output / name)
+    shutil.copy2(build.BUILD / 'editor.js', output / 'editor.js')
+    shutil.copy2(build.BUILD / 'static-example.wasm', output / 'preview.wasm')
+    # All URLs are relative, including Worker imports, so a /repo/ Pages base works.
+    config = {
+        'mode': 'remote' if args.compile_endpoint else 'static',
+        'compileEndpoint': args.compile_endpoint,
+        'simulatorUrl': None,
+        'precompiled': {'file': './preview.wasm', 'sha256': digest(output / 'preview.wasm'),
+                        'sourceSha256': digest(output / 'ContentView.swift')},
+    }
+    (output / 'config.json').write_text(json.dumps(config, indent=2) + '\n')
+    (output / 'THIRD_PARTY_NOTICES.txt').write_text(notices())
+    (output / '.nojekyll').write_text('')
+    manifest = {p.name: digest(p) for p in sorted(output.iterdir()) if p.is_file()}
+    (output / 'SHA256SUMS').write_text(''.join(f'{sha}  {name}\n' for name, sha in manifest.items()))
+    archive = shutil.make_archive(str(output), 'zip', output)
+    print(json.dumps({'output': str(output), 'zip': archive, 'mode': config['mode'],
+                      'wasmBytes': (output / 'preview.wasm').stat().st_size}, indent=2))
+
+if __name__ == '__main__': main()
