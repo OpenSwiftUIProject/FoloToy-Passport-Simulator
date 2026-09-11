@@ -6,6 +6,11 @@ export class QemuRuntime extends EventTarget {
   #ready = false;
   #manifest = null;
   #networkDebug = false;
+  #networkEnabled = true;
+
+  setNetworkEnabled(enabled) {
+    this.#networkEnabled = Boolean(enabled);
+  }
 
   async start(firmwareUrl) {
     this.#ready = false;
@@ -71,12 +76,16 @@ export class QemuRuntime extends EventTarget {
   async #loadManifest() {
     if (this.#manifest) return this.#manifest;
 
-    const manifestResponse = await fetch("/wasm/manifest.json", { cache: "no-store" });
+    const base = new URL('./', import.meta.url);
+    const manifestResponse = await fetch(new URL('wasm/manifest.json', base), { cache: "no-store" });
     if (!manifestResponse.ok) {
       throw new Error("WASM QEMU runtime is not installed.");
     }
 
     this.#manifest = await manifestResponse.json();
+    for (const key of ['worker', 'firmware']) {
+      this.#manifest[key] = new URL(this.#manifest[key].replace(/^\/+/, ''), base).href;
+    }
     return this.#manifest;
   }
 
@@ -95,6 +104,7 @@ export class QemuRuntime extends EventTarget {
       type: "start",
       firmware,
       networkDebug: this.#networkDebug,
+      networkEnabled: this.#networkEnabled,
     };
     this.#worker.postMessage(message, [firmware]);
   }

@@ -1,7 +1,42 @@
 # Deployment
 
-The production site is a small Node.js service because FoloToy community
-imports are downloaded and verified by the same-origin server.
+This fork supports a static GitHub Pages edition and the full Node.js edition.
+The Node service provides community imports and the emulated Wi-Fi bridge.
+
+## GitHub Pages
+
+Public URL: https://openswiftuiproject.github.io/FoloToy-Passport-Simulator/
+
+```sh
+npm ci
+npm test
+npm run build:pages
+python3 -m http.server 4194 --bind 127.0.0.1 --directory dist-pages
+```
+
+The exporter requires an empty output destination (or pass a fresh path to
+`node tools/build-pages.mjs /path/to/export`). Pages serves the browser shell,
+Worker, QEMU WASM, bundled images and local file picker. No Node endpoints,
+WebSocket bridge, shared memory or cross-origin isolation headers are required.
+Community-link import and firmware networking remain features of the Node edition.
+
+Choose GitHub Actions in repository Settings → Pages. `.github/workflows/pages.yml`
+validates both editions, builds `dist-pages/`, and deploys this fork's main branch.
+All browser asset paths resolve beneath the project URL, including the Worker.
+
+The published Playground on `/ai-passport/` shares this origin. It discovers
+`playground-config.json` (`service: openswiftui-passport-simulator`, protocol 1,
+`transport: indexeddb`), then stages a full image in browser storage. The explicit
+`?playground=<48-hex-id>` link reads and verifies it before launching QEMU. It is
+valid for ten minutes in that browser/profile, not a public firmware download.
+The `browser-handoff.js` module is also shipped in ai-passport; keep its protocol
+compatible. See the [wire format](https://github.com/OpenSwiftUIProject/ai-passport/blob/main/tools/playground/DEPLOYMENT.md#compiler-and-simulator-contracts).
+
+To test both project paths together, export both sites beneath one static HTTP
+root, fill the local Simulator URL on Playground, and build/send a view. Different
+origins use the downloaded full.bin file picker or the optional local Node API.
+
+## Node.js edition
 
 ## Build
 

@@ -12,6 +12,17 @@ ESP-EMU v0.42.0、WebAssembly 和 QEMU，直接模拟开发板外设，普通固
 默认固件来自 [`FoloToy/ai-passport`](https://github.com/FoloToy/ai-passport)
 的 `c73254e2` 提交。
 
+## 在线浏览器版
+
+打开 [OpenSwiftUIProject Simulator](https://openswiftuiproject.github.io/FoloToy-Passport-Simulator/)，
+无需启动本地服务。支持内置固件、选择完整 `.bin` 文件、画面、按键和音频。
+联网玩法、Wi-Fi 桥接和社区链接导入需要下面的本地 Node 版。
+
+从 [OpenSwiftUI Playground](https://openswiftuiproject.github.io/ai-passport/) 构建后
+**Send to Simulator → Open Simulator** 即可运行。两个站点同源，固件通过浏览器 IndexedDB
+传递而不上传；链接仅在同一浏览器配置中 10 分钟有效，最多保留三份。到期会拒绝加载，
+后续发送时清理旧记录。跨来源或换浏览器时，请下载 full.bin 后在模拟器里选择文件。
+
 ## 模拟器说明
 
 目前支持：
@@ -186,7 +197,7 @@ EMULATOR_NETWORK_ALLOW_PRIVATE=1 npm start
 本仓库的 `playground/` 保留早期原型；新功能和安装说明以 ai-passport 的
 `tools/playground/` 为准。快速 WASM 预览不需要启动 QEMU。
 
-预览完成后，可在 Playground 构建并下载 `ContentView-full.bin`，或直接发送给本 Simulator：
+默认使用上面的在线版。需要本地网络桥接时，可启动带导入 API 的本地版：
 
 ```sh
 git clone --branch main https://github.com/OpenSwiftUIProject/FoloToy-Passport-Simulator.git
@@ -196,7 +207,7 @@ npm start -- --playground-origin https://openswiftuiproject.github.io
 ```
 
 本地预览时，将 origin 替换为页面的实际协议、主机和端口，不带路径。
-Playground 的 Simulator URL 默认 `http://127.0.0.1:4190/`。点击 Send to Simulator，
+本地模式将 Playground 的 Simulator URL 改为 `http://127.0.0.1:4190/`。点击 Send to Simulator，
 再点 Open Simulator，会加载同一份完整固件并从初始状态运行。导入 API 需要本版本；
 旧版可通过已开启的本地文件上传入口读取下载的 full.bin。
 

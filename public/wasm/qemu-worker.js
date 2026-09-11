@@ -133,9 +133,10 @@ function postDebugSnapshot(now) {
   }, [registers.buffer]);
 }
 
-async function start(firmware, debugEnabled = false) {
+async function start(firmware, debugEnabled = false, networkEnabled = true) {
   running = false;
   network?.close();
+  network = null;
   networkDebugEnabled = Boolean(debugEnabled);
   const currentGeneration = ++generation;
   reportProgress(70, "正在初始化 WebAssembly", "编译并载入 ESP32-C3 模拟核心");
@@ -149,14 +150,20 @@ async function start(firmware, debugEnabled = false) {
   reportProgress(91, "正在刷写固件镜像", "写入虚拟 Flash");
   emulator.load_firmware(new Uint8Array(firmware));
   reportProgress(95, "正在连接虚拟外设", "启动显示、音频与网络桥接");
-  const protocol = self.location.protocol === "https:" ? "wss:" : "ws:";
-  network = new EmulatorNetworkBridge(emulator, {
-    url: `${protocol}//${self.location.host}/api/emulator-network`,
-    onStatus: (detail) => postMessage({ type: "network-status", detail }),
-    onEvent: (detail) => postMessage({ type: "network-event", detail }),
-  });
-  network.setDebugEnabled(networkDebugEnabled);
-  network.connect();
+  if (networkEnabled) {
+    const protocol = self.location.protocol === "https:" ? "wss:" : "ws:";
+    network = new EmulatorNetworkBridge(emulator, {
+      url: `${protocol}//${self.location.host}/api/emulator-network`,
+      onStatus: (detail) => postMessage({ type: "network-status", detail }),
+      onEvent: (detail) => postMessage({ type: "network-event", detail }),
+    });
+    network.setDebugEnabled(networkDebugEnabled);
+    network.connect();
+  } else {
+    postMessage({ type: 'network-status', detail: {
+      state: 'offline', txBytes: 0, txFrames: 0, rxBytes: 0, rxFrames: 0,
+    } });
+  }
   createBoard();
   reportProgress(98, "正在启动固件", "等待模拟器进入运行状态");
   running = true;
@@ -222,7 +229,7 @@ self.addEventListener("message", async (event) => {
   try {
     switch (event.data.type) {
       case "start":
-        await start(event.data.firmware, event.data.networkDebug);
+        await start(event.data.firmware, event.data.networkDebug, event.data.networkEnabled);
         break;
       case "button":
         // A physical hold supersedes any synthetic gesture for this key.

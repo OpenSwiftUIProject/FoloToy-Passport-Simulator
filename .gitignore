@@ -5,3 +5,6 @@ artifacts/
 /*.bin
 tools/.smoke-*-temp.mjs
 .DS_Store
+
+dist-pages/
+node_modules/

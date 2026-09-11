@@ -1,0 +1,6 @@
+{
+  "service": "openswiftui-passport-simulator",
+  "protocolVersion": 1,
+  "transport": "http",
+  "networkEnabled": true
+}

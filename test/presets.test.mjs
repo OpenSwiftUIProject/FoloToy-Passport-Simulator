@@ -35,7 +35,7 @@ test("ships every firmware preset referenced by the sidebar", async () => {
     await readFile(new URL("assets/firmware/catalog.json", publicRoot), "utf8"),
   );
   const urls = [...html.matchAll(/data-firmware-url="([^"]+)"/g)]
-    .map((match) => match[1]);
+    .map((match) => new URL(match[1], "https://example.org/").pathname);
 
   assert.deepEqual(urls, [...expectedPresets.keys()]);
   assert.equal(catalog.schemaVersion, 1);

@@ -1,4 +1,5 @@
 import { QemuRuntime } from "./runtime.js";
+import { readFirmware } from './browser-handoff.js';
 import { BrowserAudio } from "./audio.js";
 import {
   formatFirmwareSize,
@@ -96,6 +97,7 @@ const uartBuffer = new UartConsoleBuffer();
 let uartPaused = false;
 let uartRenderPending = false;
 let allowLocalFirmwareUpload = false;
+let browserOnly = false;
 let fullscreenFallback = false;
 const heldPointerButtons = new Set();
 const heldKeyboardButtons = new Set();
@@ -135,8 +137,8 @@ function clearUartConsole() {
 }
 
 function resetNetworkView() {
-  networkState.textContent = "CONNECTING";
-  networkStateLight.dataset.state = "connecting";
+  networkState.textContent = browserOnly ? 'OFFLINE' : 'CONNECTING';
+  networkStateLight.dataset.state = browserOnly ? 'offline' : 'connecting';
   networkTx.textContent = "0 B";
   networkTxFrames.textContent = "0 frames";
   networkRx.textContent = "0 B";
@@ -734,6 +736,7 @@ let selectedFirmwareSource = "community";
 const uploadError = document.querySelector("#firmware-upload-error");
 
 function selectFirmwareSource(source) {
+  if (browserOnly) source = "local";
   if (source === "local" && !allowLocalFirmwareUpload) {
     source = "community";
   }
@@ -757,16 +760,27 @@ function selectFirmwareSource(source) {
 
 async function configureFirmwareSources() {
   try {
-    const response = await fetch("/api/runtime-config", { cache: "no-store" });
-    if (!response.ok) throw new Error(`运行配置请求失败: ${response.status}`);
-    const config = await response.json();
-    allowLocalFirmwareUpload = config.allowLocalFirmwareUpload === true;
+    const deployment = await fetch(new URL('./playground-config.json', import.meta.url), { cache: 'no-store' });
+    if (!deployment.ok) throw new Error(`部署配置请求失败: ${deployment.status}`);
+    const capabilities = await deployment.json();
+    browserOnly = capabilities.transport === 'indexeddb' && capabilities.protocolVersion === 1;
+    if (browserOnly) {
+      allowLocalFirmwareUpload = true;
+      runtime.setNetworkEnabled(false);
+      networkPolicy.textContent = 'OFFLINE';
+      document.querySelector('#static-notice').hidden = false;
+    } else {
+      const response = await fetch("/api/runtime-config", { cache: "no-store" });
+      if (!response.ok) throw new Error(`运行配置请求失败: ${response.status}`);
+      const config = await response.json();
+      allowLocalFirmwareUpload = config.allowLocalFirmwareUpload === true;
+    }
   } catch (error) {
     allowLocalFirmwareUpload = false;
     log(`本地固件入口保持关闭：${error.message}`);
   }
 
-  firmwareSourceTabList.hidden = !allowLocalFirmwareUpload;
+  firmwareSourceTabList.hidden = browserOnly || !allowLocalFirmwareUpload;
   firmwareInput.disabled = !allowLocalFirmwareUpload;
   uploadControl.disabled = false;
   uploadControl.setAttribute("aria-disabled", "false");
@@ -828,6 +842,7 @@ uploadControl.addEventListener("click", () => {
 });
 
 async function importCommunityFirmware() {
+  if (browserOnly) throw new Error('浏览器版请先下载完整固件，再选择本地文件。社区链接导入需要本地完整版。');
   if (!communityPlayUrl.reportValidity()) return;
   const previousFirmwareName = activeFirmwareName;
   const previousRuntimeState = currentRuntimeState;
@@ -989,7 +1004,11 @@ async function startApplication() {
       setRuntimeState('loading', '正在接收 Playground 固件');
       presetFeedback.textContent = '正在加载 ContentView-full.bin';
       renderPresetStates();
-      await runtime.start(`/api/playground-firmware/${handoff}`);
+      if (browserOnly) {
+        await runtime.loadFirmware(await readFirmware(handoff, new URL('./', import.meta.url).href));
+      } else {
+        await runtime.start(`/api/playground-firmware/${handoff}`);
+      }
     } catch (error) {
       setUploadBusy(false);
       setRuntimeState('waiting', 'Playground 固件加载失败');

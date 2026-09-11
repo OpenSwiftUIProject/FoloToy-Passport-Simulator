@@ -1376,3 +1376,7 @@ body.simulator-fullscreen .stage.is-fullscreen {
   .simulator-notice-actions > a { padding: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.static-notice { margin: 0; padding: 10px 24px; color: #b9cbd3; background: #172a31; font-size: 13px; line-height: 1.6; }
+.static-notice[hidden] { display: none; }
+.static-notice a { color: #79e9bf; }

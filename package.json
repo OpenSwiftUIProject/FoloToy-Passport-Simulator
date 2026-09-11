@@ -15,9 +15,13 @@
     "playground:start": "cd playground && python3 server.py",
     "playground:test": "cd playground && node smoke.mjs",
     "playground:editor": "cd playground && npm run build:editor",
-    "playground:export": "cd playground && python3 export_static.py"
+    "playground:export": "cd playground && python3 export_static.py",
+    "build:pages": "npm run prepare:emulator && node tools/build-pages.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "6.2.4"
   }
 }

@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0a0d10">
     <title>FoloToy Passport Simulator</title>
-    <link rel="stylesheet" href="/styles.css">
-    <script type="module" src="/app.js"></script>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
   </head>
   <body>
+    <p id="static-notice" class="static-notice" hidden>浏览器版：固件只在你的浏览器中运行。联网玩法和社区链接导入需要<a href="https://github.com/OpenSwiftUIProject/FoloToy-Passport-Simulator#本地运行">本地完整版</a>。
+      <a href="https://openswiftuiproject.github.io/ai-passport/">打开 OpenSwiftUI Playground ↗</a></p>
     <main class="emulator">
       <header class="toolbar">
-        <a class="brand" href="/" aria-label="FoloToy Passport Simulator home">
+        <a class="brand" href="./" aria-label="FoloToy Passport Simulator home">
           <span>
             <strong>FoloToy Passport Simulator</strong>
             <small>Powered by WebAssembly &amp; QEMU</small>
@@ -65,7 +67,7 @@
             <button class="firmware-preset" type="button"
                     data-firmware-id="music-keychain"
                     data-firmware-name="音乐钥匙扣"
-                    data-firmware-url="/assets/firmware/music-keychain.bin"
+                    data-firmware-url="./assets/firmware/music-keychain.bin"
                     aria-pressed="false">
               <span class="preset-index" aria-hidden="true">01</span>
               <span class="preset-copy">
@@ -77,7 +79,7 @@
             <button class="firmware-preset" type="button"
                     data-firmware-id="answer-book"
                     data-firmware-name="答案之书"
-                    data-firmware-url="/assets/firmware/answer-book.bin"
+                    data-firmware-url="./assets/firmware/answer-book.bin"
                     aria-pressed="false">
               <span class="preset-index" aria-hidden="true">02</span>
               <span class="preset-copy">
@@ -89,7 +91,7 @@
             <button class="firmware-preset is-active" type="button"
                     data-firmware-id="official-demo"
                     data-firmware-name="FoloToy 官方 Demo"
-                    data-firmware-url="/assets/firmware/folotoy-demo.bin"
+                    data-firmware-url="./assets/firmware/folotoy-demo.bin"
                     aria-pressed="true">
               <span class="preset-index" aria-hidden="true">03</span>
               <span class="preset-copy">
@@ -101,7 +103,7 @@
             <button class="firmware-preset" type="button"
                     data-firmware-id="feishu-calendar-assistant"
                     data-firmware-name="飞书日程助手"
-                    data-firmware-url="/assets/firmware/feishu-calendar-assistant.bin"
+                    data-firmware-url="./assets/firmware/feishu-calendar-assistant.bin"
                     aria-pressed="false">
               <span class="preset-index" aria-hidden="true">04</span>
               <span class="preset-copy">
@@ -141,7 +143,7 @@
                 <path d="M4 14h6v6"></path>
               </svg>
             </button>
-            <img class="shell-art" src="/assets/ai-passport-shell-reference.png" alt="">
+            <img class="shell-art" src="./assets/ai-passport-shell-reference.png" alt="">
             <div class="screen-bezel">
               <canvas id="qemu-display" width="240" height="320" aria-label="QEMU firmware display"></canvas>
               <div id="screen-overlay" class="screen-overlay">

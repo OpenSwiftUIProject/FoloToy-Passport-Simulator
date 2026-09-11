@@ -1,0 +1,48 @@
+name: Simulator Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simulator-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@94196ee1d15439c1b6651cd87ef14e88ec435966
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build && npm run verify:release
+      - run: npm run build:pages
+      - uses: actions/upload-pages-artifact@98ef48e41587a300b82de4cf298aa98b57b2faae
+        with:
+          path: dist-pages
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.repository == 'OpenSwiftUIProject/FoloToy-Passport-Simulator'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
+      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
+        id: deployment
