@@ -1282,13 +1282,13 @@ body.simulator-fullscreen .stage.is-fullscreen {
   }
   .firmware-presets {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     border: 1px solid var(--line);
     border-bottom: 0;
   }
   .firmware-preset {
     min-height: 66px;
-    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-columns: 20px minmax(0, 1fr) auto;
     padding: 10px 12px;
     border-right: 1px solid var(--line);
   }
@@ -1296,7 +1296,7 @@ body.simulator-fullscreen .stage.is-fullscreen {
     border-right: 0;
   }
   .preset-state {
-    grid-column: 2;
+    grid-column: auto;
   }
   .preset-feedback {
     margin: 10px 0 12px;

@@ -1,5 +1,6 @@
 import { QemuRuntime } from "./runtime.js";
 import { readFirmware } from './browser-handoff.js';
+import { messageRequest, receiveWindowFirmware } from './window-handoff.js';
 import { BrowserAudio } from "./audio.js";
 import {
   formatFirmwareSize,
@@ -993,10 +994,11 @@ async function startApplication() {
   await configureFirmwareSources();
   showSimulatorNoticeOnce(simulatorNotice);
   const handoff = new URLSearchParams(location.search).get('playground');
-  if (handoff !== null) {
+  const fromWindow = new URLSearchParams(location.search).has('playground-message');
+  if (handoff !== null || fromWindow) {
     try {
       if (!allowLocalFirmwareUpload) throw new Error('当前部署不允许加载 Playground 固件');
-      if (!/^[a-f0-9]{48}$/.test(handoff)) throw new Error('Playground 固件链接无效');
+      if (!fromWindow && !/^[a-f0-9]{48}$/.test(handoff)) throw new Error('Playground 固件链接无效');
       pendingPresetId = null;
       activeFirmwareName = 'ContentView-full.bin';
       setUploadBusy(true);
@@ -1004,7 +1006,10 @@ async function startApplication() {
       setRuntimeState('loading', '正在接收 Playground 固件');
       presetFeedback.textContent = '正在加载 ContentView-full.bin';
       renderPresetStates();
-      if (browserOnly) {
+      if (fromWindow) {
+        if (!browserOnly) throw new Error('请使用浏览器版 Simulator 接收窗口消息');
+        await runtime.loadFirmware(await receiveWindowFirmware(messageRequest(location.href), new URL('./', import.meta.url).href));
+      } else if (browserOnly) {
         await runtime.loadFirmware(await readFirmware(handoff, new URL('./', import.meta.url).href));
       } else {
         await runtime.start(`/api/playground-firmware/${handoff}`);

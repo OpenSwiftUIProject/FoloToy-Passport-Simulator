@@ -32,9 +32,13 @@ valid for ten minutes in that browser/profile, not a public firmware download.
 The `browser-handoff.js` module is also shipped in ai-passport; keep its protocol
 compatible. See the [wire format](https://github.com/OpenSwiftUIProject/ai-passport/blob/main/tools/playground/DEPLOYMENT.md#compiler-and-simulator-contracts).
 
-To test both project paths together, export both sites beneath one static HTTP
-root, fill the local Simulator URL on Playground, and build/send a view. Different
-origins use the downloaded full.bin file picker or the optional local Node API.
+Local Playground previews keep the same online Simulator URL. The static
+capability also advertises `windowHandoff: true`: an explicit Open click creates
+an opener-free window, and `window-handoff.js` delivers the checked image using
+origin-, peer- and token-checked postMessage exchanges. No local Simulator
+service or same-origin preview copy is needed. Keep Playground open until delivery
+completes; reopen a transferred view from its Open link. The file picker remains
+a fallback if popup or cross-window browser policies block delivery.
 
 ## Node.js edition
 
@@ -141,6 +145,6 @@ docker run --rm -p 4190:4190 folotoy-passport-simulator
 ```
 
 Terminate TLS at the reverse proxy and forward requests to port `4190`.
-The server emits the cross-origin isolation headers required by the WASM
+The Node server preserves its cross-origin isolation headers for the WASM
 runtime and restricts community imports to published firmware from
 `https://ai-passport.folotoy.cn`.

@@ -8,6 +8,7 @@ await cp(new URL('../public/', import.meta.url), output, { recursive: true });
 await writeFile(resolve(output, 'playground-config.json'), JSON.stringify({
   service: 'openswiftui-passport-simulator', protocolVersion: 1,
   transport: 'indexeddb', networkEnabled: false,
+  windowHandoff: true,
 }, null, 2) + '\n');
 await writeFile(resolve(output, '.nojekyll'), '');
 console.log(`Built static Simulator: ${output}`);
