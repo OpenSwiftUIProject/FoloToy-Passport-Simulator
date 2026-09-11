@@ -64,55 +64,20 @@
             <h2 id="try-panel-title">尝试一下</h2>
           </header>
           <div class="firmware-presets">
-            <button class="firmware-preset" type="button"
-                    data-firmware-id="music-keychain"
-                    data-firmware-name="音乐钥匙扣"
-                    data-firmware-url="./assets/firmware/music-keychain.bin"
-                    aria-pressed="false">
+            <button class="firmware-preset is-active" type="button"
+                    data-firmware-id="pocket-2048"
+                    data-firmware-name="口袋 2048"
+                    data-firmware-url="./assets/firmware/pocket-2048.bin"
+                    aria-pressed="true">
               <span class="preset-index" aria-hidden="true">01</span>
               <span class="preset-copy">
-                <strong>音乐钥匙扣</strong>
-                <small>语音互动 · 8.00 MB</small>
-              </span>
-              <span class="preset-state">运行</span>
-            </button>
-            <button class="firmware-preset" type="button"
-                    data-firmware-id="answer-book"
-                    data-firmware-name="答案之书"
-                    data-firmware-url="./assets/firmware/answer-book.bin"
-                    aria-pressed="false">
-              <span class="preset-index" aria-hidden="true">02</span>
-              <span class="preset-copy">
-                <strong>答案之书</strong>
-                <small>随机回答 · 2.76 MB</small>
-              </span>
-              <span class="preset-state">运行</span>
-            </button>
-            <button class="firmware-preset is-active" type="button"
-                    data-firmware-id="official-demo"
-                    data-firmware-name="FoloToy 官方 Demo"
-                    data-firmware-url="./assets/firmware/folotoy-demo.bin"
-                    aria-pressed="true">
-              <span class="preset-index" aria-hidden="true">03</span>
-              <span class="preset-copy">
-                <strong>FoloToy 官方 Demo</strong>
-                <small>当前默认 · 1.51 MB</small>
+                <strong>口袋 2048</strong>
+                <small>合并数字 · 1.60 MB</small>
               </span>
               <span class="preset-state">当前</span>
             </button>
-            <button class="firmware-preset" type="button"
-                    data-firmware-id="feishu-calendar-assistant"
-                    data-firmware-name="飞书日程助手"
-                    data-firmware-url="./assets/firmware/feishu-calendar-assistant.bin"
-                    aria-pressed="false">
-              <span class="preset-index" aria-hidden="true">04</span>
-              <span class="preset-copy">
-                <strong>飞书日程助手</strong>
-                <small>日程与待办 · 2.19 MB</small>
-              </span>
-              <span class="preset-state">运行</span>
-            </button>
           </div>
+          <p class="preset-feedback">OK 切换横／纵轴，UP、DOWN 沿当前轴移动。合并相同数字，挑战 2048！</p>
           <p id="preset-feedback" class="preset-feedback" aria-live="polite">
             选择镜像后将自动刷写并运行
           </p>

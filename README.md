@@ -4,13 +4,17 @@
 
 [![FoloToy AI Passport 模拟器演示](./public/assets/demo/folotoy-emu.gif)](./public/assets/demo/folotoy-emu.mp4)
 
-> 点击可观看视频！
+> 上游模拟器功能演示，点击可观看视频；此 fork 默认运行下述 2048 游戏。
 
 在浏览器中运行 FoloToy AI Passport 的 ESP32-C3 固件。项目基于
 ESP-EMU v0.42.0、WebAssembly 和 QEMU，直接模拟开发板外设，普通固件无需为浏览器单独适配。
 
-默认固件来自 [`FoloToy/ai-passport`](https://github.com/FoloToy/ai-passport)
-的 `c73254e2` 提交。
+默认且唯一内置固件为[口袋 2048（社区玩法 223）](https://ai-passport.folotoy.cn/plays/223/)，
+与 [v0.1.0-pocket-2048](https://github.com/OpenSwiftUIProject/ai-passport/releases/tag/v0.1.0-pocket-2048)
+发布包的完整固件一致。源码版本为 `80419bbda98e030afd742cdb9d11c8a8da4a5c42`，
+SHA-256 为 `d6009ba20a34fdf7acb773278dc5f88425fc1f35c0c341abb505a7c11e7be36c`。
+来源和大小记录在 [catalog.json](public/assets/firmware/catalog.json)，许可声明随
+[固件一起分发](public/assets/firmware/pocket-2048-NOTICES.txt)。
 
 ## 在线浏览器版
 
@@ -21,7 +25,10 @@ ESP-EMU v0.42.0、WebAssembly 和 QEMU，直接模拟开发板外设，普通固
 从 [OpenSwiftUI Playground](https://openswiftuiproject.github.io/ai-passport/) 构建后
 **Send to Simulator → Open Simulator** 即可运行。两个站点同源，固件通过浏览器 IndexedDB
 传递而不上传；链接仅在同一浏览器配置中 10 分钟有效，最多保留三份。到期会拒绝加载，
-后续发送时清理旧记录。跨来源或换浏览器时，请下载 full.bin 后在模拟器里选择文件。
+后续发送时清理旧记录。本地 Playground 也可直接使用此线上地址：不同源时，点击
+Open Simulator 后通过窗口消息传递固件，发送完成前保持 Playground 打开。
+弹窗被拦截时允许后重试；重新载入 View 时回到 Playground 再次 Open。
+换浏览器或分享给别人时，请下载 full.bin 后选择文件。
 
 ## 模拟器说明
 
@@ -34,25 +41,11 @@ ESP-EMU v0.42.0、WebAssembly 和 QEMU，直接模拟开发板外设，普通固
 - CPU 寄存器、UART 和网络检查器
 - 本地固件上传和 FoloToy 社区固件导入
 
-页面内置“音乐钥匙扣”“答案之书”“FoloToy 官方 Demo”和“飞书日程助手”
-四个固件。
+打开页面直接进入 2048，无需访问社区下载接口。短按 OK 切换横／纵轴，UP、DOWN 沿
+当前轴移动；底部显示方向。合成 2048 或无法移动时，短按 OK 重开；长按 OK 返回固件菜单。
 
-可通过 URL 的 `id` 参数指定启动时加载的内置固件，例如：
-
-```text
-http://127.0.0.1:4190/?id=2
-```
-
-仅接受以下固定值：
-
-| `id` | 固件 |
-| --- | --- |
-| `1` | 音乐钥匙扣 |
-| `2` | 答案之书 |
-| `3` | FoloToy 官方 Demo |
-| `4` | 飞书日程助手 |
-
-参数缺失或不是上述值时加载 FoloToy 官方 Demo。
+`?id=1` 和 `?play=223` 都使用这份内置固件；缺失或未知 `id` 也回到 2048。
+其他社区玩法仍可在本地 Node 版通过 `?play=<id>` 导入，Pages 版可选择下载的完整固件。
 
 按键也可使用键盘操作：
 

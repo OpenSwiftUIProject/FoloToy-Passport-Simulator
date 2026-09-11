@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -11,22 +11,7 @@ import {
 
 const publicRoot = new URL("../public/", import.meta.url);
 const expectedPresets = new Map([
-  [
-    "/assets/firmware/music-keychain.bin",
-    "fc16e29a643551a342d899f2515941bf555a7a7eaa193c012aec38789d6e7280",
-  ],
-  [
-    "/assets/firmware/answer-book.bin",
-    "b4eedd4df80a101e7ad217827b7b826908983ac76b82df82b00c8458752d5f7d",
-  ],
-  [
-    "/assets/firmware/folotoy-demo.bin",
-    "38c8f5f611cb670085354e3d08a7d67c6f026cb1ef43d9bba92a6822d749045c",
-  ],
-  [
-    "/assets/firmware/feishu-calendar-assistant.bin",
-    "95a428618ec2d44feacd4a1ffc9467b003c2ccb44cea455776f5bd339c68199e",
-  ],
+  ["/assets/firmware/pocket-2048.bin", "d6009ba20a34fdf7acb773278dc5f88425fc1f35c0c341abb505a7c11e7be36c"],
 ]);
 
 test("ships every firmware preset referenced by the sidebar", async () => {
@@ -38,6 +23,13 @@ test("ships every firmware preset referenced by the sidebar", async () => {
     .map((match) => new URL(match[1], "https://example.org/").pathname);
 
   assert.deepEqual(urls, [...expectedPresets.keys()]);
+  const files = await readdir(new URL("assets/firmware/", publicRoot));
+  assert.deepEqual(files.filter(name => name.endsWith('.bin')), ['pocket-2048.bin']);
+  const manifest = JSON.parse(await readFile(new URL('wasm/manifest.json', publicRoot), 'utf8'));
+  assert.equal(manifest.firmware, urls[0]);
+  const bundled = catalog.firmwares[0];
+  assert.equal(bundled.communityUrl, 'https://ai-passport.folotoy.cn/plays/223/');
+  assert.ok((await readFile(new URL(bundled.notices.slice(1), publicRoot))).byteLength > 0);
   assert.equal(catalog.schemaVersion, 1);
   assert.equal(catalog.default, DEFAULT_FIRMWARE_PRESET_ID);
   assert.deepEqual(

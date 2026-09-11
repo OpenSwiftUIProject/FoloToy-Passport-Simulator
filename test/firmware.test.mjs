@@ -13,39 +13,16 @@ import {
 
 const availablePresetIds = Object.values(FIRMWARE_PRESET_IDS_BY_URL_ID);
 
-test("maps URL IDs 1 through 4 to the fixed firmware allowlist", () => {
-  const expectedIds = [
-    "music-keychain",
-    "answer-book",
-    DEFAULT_FIRMWARE_PRESET_ID,
-    "feishu-calendar-assistant",
-  ];
-
-  for (const [index, expectedId] of expectedIds.entries()) {
-    assert.equal(
-      resolveFirmwarePresetId(`?id=${index + 1}`, availablePresetIds),
-      expectedId,
-    );
+test("uses Pocket 2048 as the only bundled preset", () => {
+  assert.deepEqual(availablePresetIds, ["pocket-2048"]);
+  for (const search of ["", "?id=1", "?play=223", "?debug=network", "?id=", "?id=0", "?id=2", "?id=3", "?id=4", "?id=5", "?id=01", "?id=../file"]) {
+    assert.equal(resolveFirmwarePresetId(search, availablePresetIds), "pocket-2048");
   }
 });
 
-test("uses the official demo unless the URL ID is exactly 1 through 4", () => {
-  for (const search of [
-    "",
-    "?debug=network",
-    "?id=",
-    "?id=0",
-    "?id=5",
-    "?id=01",
-    "?id=answer-book",
-    "?id=../answer-book",
-    "?firmware=answer-book",
-  ]) {
-    assert.equal(
-      resolveFirmwarePresetId(search, availablePresetIds),
-      DEFAULT_FIRMWARE_PRESET_ID,
-    );
-  }
+test("bundled community ID does not need the community import API", () => {
+  assert.equal(resolveCommunityPlayUrl("?play=223"), null);
+  assert.equal(resolveCommunityPlayUrl("?id=1&play=223"), null);
 });
 
 test("resolves a community play ID from the URL", () => {

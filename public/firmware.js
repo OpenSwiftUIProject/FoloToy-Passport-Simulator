@@ -1,11 +1,9 @@
 export const MAX_FIRMWARE_BYTES = 8 * 1024 * 1024;
-export const DEFAULT_FIRMWARE_PRESET_ID = "official-demo";
+export const DEFAULT_FIRMWARE_PRESET_ID = "pocket-2048";
+export const BUNDLED_COMMUNITY_PLAY_ID = "223";
 export const COMMUNITY_ORIGIN = "https://ai-passport.folotoy.cn";
 export const FIRMWARE_PRESET_IDS_BY_URL_ID = Object.freeze({
-  1: "music-keychain",
-  2: "answer-book",
-  3: DEFAULT_FIRMWARE_PRESET_ID,
-  4: "feishu-calendar-assistant",
+  1: DEFAULT_FIRMWARE_PRESET_ID,
 });
 
 export function resolveCommunityPlayUrl(search) {
@@ -16,6 +14,9 @@ export function resolveCommunityPlayUrl(search) {
   if (!/^[1-9]\d*$/.test(playId || "")) {
     throw new Error("URL 参数 play 必须是正整数玩法 ID");
   }
+  // The pinned bundled game is also available through its community URL ID,
+  // including on static hosts that cannot proxy community downloads.
+  if (playId === BUNDLED_COMMUNITY_PLAY_ID) return null;
   return `${COMMUNITY_ORIGIN}/plays/${playId}/`;
 }
 
